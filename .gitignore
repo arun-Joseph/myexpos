@@ -1,0 +1,9 @@
+*.o
+*lex*
+*tab*
+*.dSYM
+expl/expl-bin
+expl/ltranslate
+spl/spl
+xfs-interface/xfs-interface
+xsm/xsm
