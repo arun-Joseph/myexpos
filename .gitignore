@@ -4,6 +4,7 @@
 *disk.xfs
 *.temp
 *.dSYM
+*mem
 expl/expl-bin
 expl/ltranslate
 spl/spl

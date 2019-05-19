@@ -5,12 +5,11 @@ cd ../expl
 
 echo "SPL"
 cd ../spl
-./spl ./spl_progs/oddnos.spl
-./spl ./spl_progs/squaresum.spl
+./spl ./spl_progs/debug.spl
 
 echo "XFS Interface"
 cd ../xfs-interface
-./xfs-interface load --os ../spl/spl_progs/oddnos.xsm
-./xfs-interface load --os ../spl/spl_progs/squaresum.xsm
+./xfs-interface fdisk
+./xfs-interface load --os ../spl/spl_progs/debug.xsm
 
 echo "Completed."
