@@ -1,6 +1,7 @@
 *.o
 *lex*
 *tab*
+*disk.xfs
 *.dSYM
 expl/expl-bin
 expl/ltranslate
