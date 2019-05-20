@@ -14,6 +14,7 @@ cd ../xfs-interface
 ./xfs-interface load --os ../spl/spl_progs/os_startup.xsm
 ./xfs-interface load --exhandler ../spl/spl_progs/haltprog.xsm
 ./xfs-interface load --int=10 ../spl/spl_progs/haltprog.xsm
-./xfs-interface load --init ../expl/expl_progs/squares.xsm
+./xfs-interface load --library ../expl/library.lib
+./xfs-interface load --init ../expl/expl_progs/init.xsm
 
 echo "Completed."
