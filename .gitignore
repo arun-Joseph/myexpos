@@ -2,6 +2,7 @@
 *lex*
 *tab*
 *disk.xfs
+*assemblycode.xsm
 *.temp
 *.dSYM
 *mem

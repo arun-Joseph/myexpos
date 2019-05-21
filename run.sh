@@ -2,6 +2,9 @@
 
 echo "ExpL"
 cd ../expl
+./expl ./expl_progs/numbers.expl
+./expl ./expl_progs/oddnums.expl
+./expl ./expl_progs/student.expl
 
 echo "SPL"
 cd ../spl
@@ -19,6 +22,6 @@ cd ../xfs-interface
 ./xfs-interface load --int=7 ../spl/spl_progs/sample_int7.xsm
 ./xfs-interface load --int=10 ../spl/spl_progs/haltprog.xsm
 ./xfs-interface load --library ../expl/library.lib
-./xfs-interface load --init ../expl/expl_progs/init.xsm
+./xfs-interface load --init ../expl/expl_progs/numbers.xsm
 
 echo "Completed."
