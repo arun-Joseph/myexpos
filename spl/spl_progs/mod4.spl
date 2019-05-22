@@ -1,0 +1,22 @@
+alias functionNum R1;
+alias currentPID R2;
+
+if (functionNum == TERMINAL_WRITE) then
+  alias word R3;
+
+  backup;
+  R1 = ACQUIRE_TERMINAL;
+  R2 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  print word;
+
+  backup;
+  R1 = RELEASE_TERMINAL;
+  R2 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+endif;
+
+return;

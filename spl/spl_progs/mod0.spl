@@ -1,0 +1,40 @@
+alias functionNum R1;
+
+if (functionNum == ACQUIRE_TERMINAL) then
+  alias currentPID R2;
+
+  while ([TERMINAL_STATUS_TABLE] == 1) do
+    [PROCESS_TABLE + currentPID*16 + 4] = WAIT_TERMINAL;
+
+    backup;
+    call SCHEDULER;
+    restore;
+  endwhile;
+
+  [TERMINAL_STATUS_TABLE] = 0;
+  [TERMINAL_STATUS_TABLE + 1] = currentPID;
+endif;
+
+if (functionNum == RELEASE_TERMINAL) then
+  alias currentPID R2;
+
+  if ([TERMINAL_STATUS_TABLE + 1] != currentPID) then
+    R0 = -1;
+    return;
+  endif;
+
+  [TERMINAL_STATUS_TABLE] = 0;
+
+  alias counter R5;
+  counter = 0;
+  while (counter < MAX_PROC_NUM) do
+    if ([PROCESS_TABLE + counter*16 + 4] == WAIT_TERMINAL) then
+      [PROCESS_TABLE + counter*16 + 4] = READY;
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  R0 = 0;
+endif;
+
+return;
