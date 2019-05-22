@@ -19,4 +19,25 @@ if (functionNum == TERMINAL_WRITE) then
   restore;
 endif;
 
+if (functionNum == TERMINAL_READ) then
+  alias wordAddr R3;
+
+  backup;
+  R1 = ACQUIRE_TERMINAL;
+  R2 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  read;
+  [PROCESS_TABLE + currentPID*16 + 4] = WAIT_TERMINAL;
+
+  backup;
+  call SCHEDULER;
+  restore;
+
+  alias word R5;
+  word = [PTBR + 2*(wordAddr/512)]*512 + wordAddr%512;
+  [word] = [PROCESS_TABLE + currentPID*16 + 8];
+endif;
+
 return;
