@@ -73,9 +73,17 @@ while (counter < 4) do
   call MEMORY_MANAGER;
   multipop(R6, R7, R8, R9, R14, R15);
 
-  loadi(R0, [INODE_TABLE + inodeIndex*16 + counter + 8]);
   [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 8] = R0;
   [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 9] = "0100";
+
+  backup;
+  R1 = DISK_LOAD;
+  R2 = currentPID;
+  R3 = R0;
+  R4 = [INODE_TABLE + inodeIndex*16 + counter + 8];
+  call DEVICE_MANAGER;
+  restore;
+
   counter = counter + 1;
 endwhile;
 
@@ -89,6 +97,12 @@ while (counter < 20) do
   [PAGE_TABLE_BASE + currentPID*20 + counter] = R0;
   [PAGE_TABLE_BASE + currentPID*20 + counter + 1] = "0110";
   counter = counter + 2;
+endwhile;
+
+counter = 496;
+while (counter < 512) do
+  [userAreaPageNum*512 + counter] = -1;
+   counter = counter + 2;
 endwhile;
 
 [[PAGE_TABLE_BASE + currentPID*20 + 16]*512] = [[PAGE_TABLE_BASE + currentPID*20 + 8]*512 + 1];

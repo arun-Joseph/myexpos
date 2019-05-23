@@ -11,6 +11,7 @@ echo "SPL"
 cd ../spl
 ./spl ./spl_progs/os_startup.spl
 ./spl ./spl_progs/timer.spl
+./spl ./spl_progs/disk.spl
 ./spl ./spl_progs/console.spl
 ./spl ./spl_progs/int6.spl
 ./spl ./spl_progs/int7.spl
@@ -30,6 +31,7 @@ cd ../xfs-interface
 ./xfs-interface load --os ../spl/spl_progs/os_startup.xsm
 ./xfs-interface load --exhandler ../spl/spl_progs/haltprog.xsm
 ./xfs-interface load --int=timer ../spl/spl_progs/timer.xsm
+./xfs-interface load --int=disk ../spl/spl_progs/disk.xsm
 ./xfs-interface load --int=console ../spl/spl_progs/console.xsm
 ./xfs-interface load --int=6 ../spl/spl_progs/int6.xsm
 ./xfs-interface load --int=7 ../spl/spl_progs/int7.xsm

@@ -2,6 +2,8 @@ loadi(2, 15);
 loadi(3, 16);
 loadi(4, 17);
 loadi(5, 18);
+loadi(6, 19);
+loadi(7, 20);
 loadi(8, 21);
 loadi(9, 22);
 loadi(14, 27);
@@ -64,6 +66,11 @@ PTBR = PAGE_TABLE_BASE + 20;
 [76*512] = [65*512 + 1];
 
 alias counter R0;
+counter = 496;
+while(counter < 512) do
+  [80*512 + counter] = -1;
+  counter = counter + 2;
+endwhile;
 
 //PROCESS_TABLE
 counter = 2;
@@ -83,6 +90,9 @@ while (counter < 128) do
   [MEMORY_FREE_LIST + counter] = 0;
   counter = counter + 1;
 endwhile;
+
+//DISK_STATUS_TABLE
+[DISK_STATUS_TABLE] = 0;
 
 //SYSTEM_STATUS_TABLE
 [SYSTEM_STATUS_TABLE + 2] = 45;
