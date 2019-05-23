@@ -52,6 +52,36 @@ if (functionNum == FREE_PAGE_TABLE) then
     [PAGE_TABLE_BASE + currentPID*20 + counter + 1] = "0000";
     counter = counter + 2;
   endwhile;
+
+  counter = 2;
+  while (counter < 10) do
+    if ([DISK_MAP_TABLE + currentPID*10 + counter] == -1) then
+      counter = counter + 1;
+      if (counter == 4) then
+        counter = 8;
+      endif;
+      continue;
+    endif;
+
+    R3 = currentPID;
+    backup;
+    R1 = RELEASE_BLOCK;
+    R2 = [DISK_MAP_TABLE + currentPID*10 + counter];
+    call MEMORY_MANAGER;
+    restore;
+    [DISK_MAP_TABLE + currentPID*10 + counter] = -1;
+
+    counter = counter + 1;
+    if (counter == 4) then
+      counter = 8;
+    endif;
+  endwhile;
+
+  counter = 4;
+  while (counter < 8) do
+    [DISK_MAP_TABLE + currentPID*10 + counter] = -1;
+    counter = counter + 1;
+  endwhile;
 endif;
 
 return;

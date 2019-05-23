@@ -58,33 +58,19 @@ while (counter < 8) do
   counter = counter + 2;
 endwhile;
 
-counter = 0;
-while (counter < 4) do
-  if ([INODE_TABLE + inodeIndex*16 + counter + 8] == -1) then
-    [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 8] = -1;
-    [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 9] = "0000";
-    counter = counter + 1;
-    continue;
-  endif;
+multipush(R5, R6, R7, R8, R9, R14, R15);
+R1 = GET_CODE_PAGE;
+R2 = [INODE_TABLE + inodeIndex*16 + 8];
+call MEMORY_MANAGER;
+multipop(R5, R6, R7, R8, R9, R14, R15);
+[PAGE_TABLE_BASE + currentPID*20 + 8] = R0;
+[PAGE_TABLE_BASE + currentPID*20 + 9] = "0100";
 
-  multipush(R6, R7, R8, R9, R14, R15);
-  R1 = GET_FREE_PAGE;
-  R2 = [INODE_TABLE + inodeIndex*16 + counter + 8];
-  call MEMORY_MANAGER;
-  multipop(R6, R7, R8, R9, R14, R15);
-
-  [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 8] = R0;
-  [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 9] = "0100";
-
-  backup;
-  R1 = DISK_LOAD;
-  R2 = currentPID;
-  R3 = R0;
-  R4 = [INODE_TABLE + inodeIndex*16 + counter + 8];
-  call DEVICE_MANAGER;
-  restore;
-
-  counter = counter + 1;
+counter = 10;
+while (counter < 16) do
+  [PAGE_TABLE_BASE + currentPID*20 + counter] = -1;
+  [PAGE_TABLE_BASE + currentPID*20 + counter + 1] = "0000";
+  counter = counter + 2;
 endwhile;
 
 counter = 16;
@@ -103,6 +89,18 @@ counter = 496;
 while (counter < 512) do
   [userAreaPageNum*512 + counter] = -1;
    counter = counter + 2;
+endwhile;
+
+counter = 0;
+while (counter < 10) do
+  [DISK_MAP_TABLE + currentPID*10 + counter] = -1;
+  counter = counter + 1;
+endwhile;
+
+counter = 4;
+while (counter < 8) do
+  [DISK_MAP_TABLE + currentPID*10 + counter] = [INODE_TABLE + inodeIndex*16 + counter + 4];
+  counter = counter + 1;
 endwhile;
 
 [[PAGE_TABLE_BASE + currentPID*20 + 16]*512] = [[PAGE_TABLE_BASE + currentPID*20 + 8]*512 + 1];

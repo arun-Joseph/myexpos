@@ -5,11 +5,13 @@ cd ../expl
 ./expl ./expl_progs/init.expl
 ./expl ./expl_progs/idle.expl
 ./expl ./expl_progs/even.expl
+./expl ./expl_progs/list.expl
 ./expl ./expl_progs/odd.expl
 
 echo "SPL"
 cd ../spl
 ./spl ./spl_progs/os_startup.spl
+./spl ./spl_progs/exception.spl
 ./spl ./spl_progs/timer.spl
 ./spl ./spl_progs/disk.spl
 ./spl ./spl_progs/console.spl
@@ -23,13 +25,12 @@ cd ../spl
 ./spl ./spl_progs/mod4.spl
 ./spl ./spl_progs/mod5.spl
 ./spl ./spl_progs/mod7.spl
-./spl ./spl_progs/haltprog.spl
 
 echo "XFS Interface"
 cd ../xfs-interface
 ./xfs-interface fdisk
 ./xfs-interface load --os ../spl/spl_progs/os_startup.xsm
-./xfs-interface load --exhandler ../spl/spl_progs/haltprog.xsm
+./xfs-interface load --exhandler ../spl/spl_progs/exception.xsm
 ./xfs-interface load --int=timer ../spl/spl_progs/timer.xsm
 ./xfs-interface load --int=disk ../spl/spl_progs/disk.xsm
 ./xfs-interface load --int=console ../spl/spl_progs/console.xsm
@@ -47,6 +48,7 @@ cd ../xfs-interface
 ./xfs-interface load --init ../expl/expl_progs/init.xsm
 ./xfs-interface load --idle ../expl/expl_progs/idle.xsm
 ./xfs-interface load --exec ../expl/expl_progs/even.xsm
+./xfs-interface load --exec ../expl/expl_progs/list.xsm
 ./xfs-interface load --exec ../expl/expl_progs/odd.xsm
 
 echo "Completed."

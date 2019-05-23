@@ -26,6 +26,7 @@ loadi(50, 63);
 loadi(51, 64);
 loadi(59, 3);
 loadi(60, 4);
+loadi(61, 2);
 loadi(63, 13);
 loadi(64, 14);
 loadi(65, 7);
@@ -100,5 +101,14 @@ endwhile;
 
 //TERMINAL_STATUS_TABLE
 [TERMINAL_STATUS_TABLE] = 0;
+
+//DISK_MAP_TABLE
+counter = 0;
+while (counter < 10) do
+  [DISK_MAP_TABLE + 20 + counter] = -1;
+  counter = counter + 1;
+endwhile;
+[DISK_MAP_TABLE + 24] = 9;
+[DISK_MAP_TABLE + 25] = 10;
 
 return;
