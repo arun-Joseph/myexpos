@@ -8,21 +8,28 @@ loadi(14, 27);
 loadi(15, 28);
 loadi(16, 29);
 loadi(17, 30);
+loadi(20, 33);
+loadi(21, 34);
 loadi(22, 35);
 loadi(23, 36);
 loadi(40, 53);
 loadi(41, 54);
+loadi(42, 55);
+loadi(43, 56);
+loadi(44, 57);
+loadi(45, 58);
 loadi(48, 61);
 loadi(49, 62);
 loadi(50, 63);
 loadi(51, 64);
+loadi(59, 3);
+loadi(60, 4);
 loadi(63, 13);
 loadi(64, 14);
 loadi(65, 7);
 loadi(66, 8);
-loadi(83, 69);
 
-//Init Process
+//INIT_PROCESS
 PTBR = PAGE_TABLE_BASE + 20;
 
 [PTBR + 0] = 63;
@@ -58,14 +65,30 @@ PTBR = PAGE_TABLE_BASE + 20;
 
 alias counter R0;
 
-//Process Table
+//PROCESS_TABLE
 counter = 2;
 while (counter < MAX_PROC_NUM) do
   [PROCESS_TABLE + counter*16 + 4] = TERMINATED;
   counter = counter + 1;
 endwhile;
 
-//Terminal Status Table
+//MEMORY_FREE_LIST
+counter = 0;
+while (counter < 83) do
+  [MEMORY_FREE_LIST + counter] = 1;
+  counter = counter + 1;
+endwhile;
+
+while (counter < 128) do
+  [MEMORY_FREE_LIST + counter] = 0;
+  counter = counter + 1;
+endwhile;
+
+//SYSTEM_STATUS_TABLE
+[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+
+//TERMINAL_STATUS_TABLE
 [TERMINAL_STATUS_TABLE] = 0;
 
 return;

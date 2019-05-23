@@ -1,0 +1,98 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+[PROCESS_TABLE + currentPID*16 + 9] = INT_EXEC;
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias fileName R6;
+fileName = [[PTBR + 2*(userSP - 4)/512]*512 + (userSP - 4)%512];
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+alias inodeIndex R7;
+inodeIndex = 0;
+while (inodeIndex < MAX_FILE_NUM) do
+  if ([INODE_TABLE + inodeIndex*16] == EXEC && [INODE_TABLE + inodeIndex*16 + 1] == fileName) then
+    break;
+  endif;
+  inodeIndex = inodeIndex + 1;
+endwhile;
+
+if (inodeIndex == MAX_FILE_NUM) then
+  [physicalAddrRetVal] = -1;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  SP = userSP;
+  ireturn;
+endif;
+
+backup;
+R1 = EXIT_PROCESS;
+R2 = currentPID;
+call PROCESS_MANAGER;
+restore;
+
+alias userAreaPageNum R8;
+userAreaPageNum = [PROCESS_TABLE + currentPID*16 + 11];
+[MEMORY_FREE_LIST + userAreaPageNum] = [MEMORY_FREE_LIST + userAreaPageNum] + 1;
+[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+SP = userAreaPageNum*512 - 1;
+[PROCESS_TABLE + currentPID*16 + 4] = RUNNING;
+[PROCESS_TABLE + currentPID*16 + 7] = inodeIndex;
+
+[PAGE_TABLE_BASE + currentPID*20 + 0] = 63;
+[PAGE_TABLE_BASE + currentPID*20 + 1] = "0100";
+[PAGE_TABLE_BASE + currentPID*20 + 2] = 64;
+[PAGE_TABLE_BASE + currentPID*20 + 3] = "0100";
+
+alias counter R9;
+counter = 4;
+while (counter < 8) do
+  [PAGE_TABLE_BASE + currentPID*20 + counter] = -1;
+  [PAGE_TABLE_BASE + currentPID*20 + counter + 1] = "0000";
+  counter = counter + 2;
+endwhile;
+
+counter = 0;
+while (counter < 4) do
+  if ([INODE_TABLE + inodeIndex*16 + counter + 8] == -1) then
+    [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 8] = -1;
+    [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 9] = "0000";
+    counter = counter + 1;
+    continue;
+  endif;
+
+  multipush(R6, R7, R8, R9, R14, R15);
+  R1 = GET_FREE_PAGE;
+  R2 = [INODE_TABLE + inodeIndex*16 + counter + 8];
+  call MEMORY_MANAGER;
+  multipop(R6, R7, R8, R9, R14, R15);
+
+  loadi(R0, [INODE_TABLE + inodeIndex*16 + counter + 8]);
+  [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 8] = R0;
+  [PAGE_TABLE_BASE + currentPID*20 + 2*counter + 9] = "0100";
+  counter = counter + 1;
+endwhile;
+
+counter = 16;
+while (counter < 20) do
+  multipush(R6, R7, R8, R9, R14, R15);
+  R1 = GET_FREE_PAGE;
+  call MEMORY_MANAGER;
+  multipop(R6, R7, R8, R9, R14, R15);
+
+  [PAGE_TABLE_BASE + currentPID*20 + counter] = R0;
+  [PAGE_TABLE_BASE + currentPID*20 + counter + 1] = "0110";
+  counter = counter + 2;
+endwhile;
+
+[[PAGE_TABLE_BASE + currentPID*20 + 16]*512] = [[PAGE_TABLE_BASE + currentPID*20 + 8]*512 + 1];
+SP = 8*512;
+[PROCESS_TABLE + currentPID*16 + 9] = 0;
+
+ireturn;

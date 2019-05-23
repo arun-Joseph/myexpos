@@ -7,7 +7,7 @@ SP = 82*512 - 1;
 
 call BOOT_MODULE;
 
-//Idle Process
+//IDLE_PROCESS
 PTBR = PAGE_TABLE_BASE;
 
 [PTBR + 0] = -1;

@@ -1,26 +1,16 @@
 int main()
 {
 decl
-  int temp, a, b;
+  int temp;
+  str input;
 enddecl
 
 begin
-  read(a);
-  read(b);
+  breakpoint;
+  write(">>>");
+  read(input);
 
-  if (a < b) then
-    temp = a;
-    a = b;
-    b = temp;
-  endif;
-
-  while (b != 0) do
-    temp = a%b;
-    a = b;
-    b = temp;
-  endwhile;
-
-  write(a);
+  temp = exposcall("Exec", input);
   return 0;
 end
 }
