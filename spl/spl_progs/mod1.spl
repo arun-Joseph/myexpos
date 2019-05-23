@@ -1,6 +1,25 @@
 alias functionNum R1;
 alias currentPID R2;
 
+if (functionNum == GET_PCB_ENTRY) then
+  alias newPID R0;
+  newPID = 0;
+  while (newPID < 16) do
+    if ([PROCESS_TABLE + newPID*16 + 4] == TERMINATED) then
+      [PROCESS_TABLE + newPID*16 + 1] = newPID;
+      [PROCESS_TABLE + newPID*16 + 4] = ALLOCATED;
+      [PROCESS_TABLE + newPID*16 + 14] = PAGE_TABLE_BASE + newPID*20;
+      [PROCESS_TABLE + newPID*16 + 15] = 10;
+      break;
+    endif;
+    newPID = newPID + 1;
+  endwhile;
+
+  if (newPID == 16) then
+    newPID = -1;
+  endif;
+endif;
+
 if (functionNum == FREE_USER_AREA_PAGE) then
   alias userAreaPageNum R8;
   userAreaPageNum = [PROCESS_TABLE + currentPID*16 + 11];

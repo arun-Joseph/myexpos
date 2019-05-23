@@ -1,0 +1,142 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+[PROCESS_TABLE + currentPID*16 + 9] = INT_FORK;
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+alias newPID R6;
+multipush(R5, R14, R15);
+R1 = GET_PCB_ENTRY;
+call PROCESS_MANAGER;
+multipop(R5, R14, R15);
+newPID = R0;
+
+if (newPID == -1) then
+  [physicalAddrRetVal] = -1;
+  SP = userSP;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  ireturn;
+endif;
+
+alias counter R7;
+alias val R8;
+alias page R9;
+counter = 4;
+while (counter < 8) do
+  val = PAGE_TABLE_BASE + currentPID*20 + counter;
+  if ([val] == -1) then
+    multipush(R5, R6, R7, R8, R14, R15);
+    R1 = GET_FREE_PAGE;
+    call MEMORY_MANAGER;
+    multipop(R5, R6, R7, R8, R14, R15);
+    [val] = R0;
+    [val + 1] = "1110";
+  endif;
+  counter = counter + 2;
+endwhile;
+
+multipush(R5, R6, R14, R15);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R5, R6, R14, R15);
+[PAGE_TABLE_BASE + newPID*20 + 16] = R0;
+[PAGE_TABLE_BASE + newPID*20 + 17] = "0110";
+
+multipush(R5, R6, R14, R15);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R5, R6, R14, R15);
+[PAGE_TABLE_BASE + newPID*20 + 18] = R0;
+[PAGE_TABLE_BASE + newPID*20 + 19] = "0110";
+
+multipush(R5, R6, R14, R15);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+multipop(R5, R6, R14, R15);
+[PROCESS_TABLE + newPID*16 + 11] = R0;
+page = R0;
+
+val = PROCESS_TABLE + newPID*16;
+[val] = 0;
+[val + 2] = currentPID;
+[val + 3] = [PROCESS_TABLE + currentPID*16 + 3];
+[val + 6] = [PROCESS_TABLE + currentPID*16 + 6];
+[val + 7] = [PROCESS_TABLE + currentPID*16 + 7];
+[val + 9] = 0;
+[val + 10] = [PROCESS_TABLE + currentPID*16 + 10];
+[val + 12] = 0;
+[val + 13] = [PROCESS_TABLE + currentPID*16 + 13];
+
+counter = 496;
+while (counter < 512) do
+  [page*512 + counter] = [[PROCESS_TABLE + currentPID*16 + 11]*512 + counter];
+  [page*512 + counter + 1] = [[PROCESS_TABLE + currentPID*16 + 11]*512 + counter + 1];
+
+  if ([page*512 + counter] == FILE) then
+    alias fileIndex R10;
+    fileIndex = [page*512 + counter + 1];
+    [OPEN_FILE_TABLE + fileIndex*4 + 1] = [OPEN_FILE_TABLE + fileIndex*4 + 1] + 1;
+  endif;
+
+  if ([page*512 + counter] == SEMAPHORE) then
+    alias semIndex R10;
+    semIndex = [page*512 + counter + 1];
+    [SEMAPHORE_TABLE + semIndex*4 + 1] = [SEMAPHORE_TABLE + semIndex*4 + 1] + 1;
+  endif;
+
+  counter = counter + 2;
+endwhile;
+
+counter = 0;
+while (counter < 10) do
+  [DISK_MAP_TABLE + newPID*10 + counter] = [DISK_MAP_TABLE + currentPID*10 + counter];
+  counter = counter + 1;
+endwhile;
+
+counter = 4;
+[PAGE_TABLE_BASE + newPID*20] = 63;
+[PAGE_TABLE_BASE + newPID*20 + 1] = "0100";
+[PAGE_TABLE_BASE + newPID*20 + 2] = 64;
+[PAGE_TABLE_BASE + newPID*20 + 3] = "0100";
+while (counter < 16) do
+  page = [PAGE_TABLE_BASE + currentPID*20 + counter];
+  [PAGE_TABLE_BASE + newPID*20 + counter] = page;
+  [PAGE_TABLE_BASE + newPID*20 + counter + 1] = [PAGE_TABLE_BASE + currentPID*20 + counter + 1];
+  if (page != -1) then
+    [MEMORY_FREE_LIST + page] = [MEMORY_FREE_LIST + page] + 1;
+  endif;
+  counter = counter + 2;
+endwhile;
+
+counter = 0;
+page = [PAGE_TABLE_BASE + newPID*20 + 16];
+while (counter < 512) do
+  [page*512 + counter] = [[PAGE_TABLE_BASE + currentPID*20 + 16]*512 + counter];
+  counter = counter + 1;
+endwhile;
+
+counter = 0;
+page = [PAGE_TABLE_BASE + newPID*20 + 18];
+while (counter < 512) do
+  [page*512 + counter] = [[PAGE_TABLE_BASE + currentPID*20 + 18]*512 + counter];
+  counter = counter + 1;
+endwhile;
+
+[[PROCESS_TABLE + newPID*16 + 11]*512] = BP;
+[physicalAddrRetVal] = newPID;
+
+physicalAddrRetVal = [[PROCESS_TABLE + newPID*16 + 14] + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+[physicalAddrRetVal] = 0;
+
+[val + 4] = CREATED;
+
+SP = userSP;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
+ireturn;

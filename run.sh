@@ -6,6 +6,7 @@ cd ../expl
 ./expl ./expl_progs/idle.expl
 ./expl ./expl_progs/even.expl
 ./expl ./expl_progs/list.expl
+./expl ./expl_progs/list2.expl
 ./expl ./expl_progs/odd.expl
 
 echo "SPL"
@@ -17,6 +18,7 @@ cd ../spl
 ./spl ./spl_progs/console.spl
 ./spl ./spl_progs/int6.spl
 ./spl ./spl_progs/int7.spl
+./spl ./spl_progs/int8.spl
 ./spl ./spl_progs/int9.spl
 ./spl ./spl_progs/int10.spl
 ./spl ./spl_progs/mod0.spl
@@ -36,6 +38,7 @@ cd ../xfs-interface
 ./xfs-interface load --int=console ../spl/spl_progs/console.xsm
 ./xfs-interface load --int=6 ../spl/spl_progs/int6.xsm
 ./xfs-interface load --int=7 ../spl/spl_progs/int7.xsm
+./xfs-interface load --int=8 ../spl/spl_progs/int8.xsm
 ./xfs-interface load --int=9 ../spl/spl_progs/int9.xsm
 ./xfs-interface load --int=10 ../spl/spl_progs/int10.xsm
 ./xfs-interface load --module 0 ../spl/spl_progs/mod0.xsm
@@ -49,6 +52,7 @@ cd ../xfs-interface
 ./xfs-interface load --idle ../expl/expl_progs/idle.xsm
 ./xfs-interface load --exec ../expl/expl_progs/even.xsm
 ./xfs-interface load --exec ../expl/expl_progs/list.xsm
+./xfs-interface load --exec ../expl/expl_progs/list2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/odd.xsm
 
 echo "Completed."
