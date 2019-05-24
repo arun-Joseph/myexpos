@@ -5,11 +5,15 @@ cd ../expl
 ./expl ./expl_progs/init.expl
 ./expl ./expl_progs/idle.expl
 ./expl ./expl_progs/even.expl
-./expl ./expl_progs/fork.expl
+./expl ./expl_progs/odd.expl
 ./expl ./expl_progs/list.expl
 ./expl ./expl_progs/list2.expl
-./expl ./expl_progs/odd.expl
+./expl ./expl_progs/rw_prog.expl
+./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/pid.expl
+./expl ./expl_progs/child.expl
+./expl ./expl_progs/merge_s.expl
+./expl ./expl_progs/merge_p.expl
 
 echo "SPL"
 cd ../spl
@@ -24,6 +28,8 @@ cd ../spl
 ./spl ./spl_progs/int9.spl
 ./spl ./spl_progs/int10.spl
 ./spl ./spl_progs/int11.spl
+./spl ./spl_progs/int13.spl
+./spl ./spl_progs/int14.spl
 ./spl ./spl_progs/int15.spl
 ./spl ./spl_progs/mod0.spl
 ./spl ./spl_progs/mod1.spl
@@ -46,6 +52,8 @@ cd ../xfs-interface
 ./xfs-interface load --int=9 ../spl/spl_progs/int9.xsm
 ./xfs-interface load --int=10 ../spl/spl_progs/int10.xsm
 ./xfs-interface load --int=11 ../spl/spl_progs/int11.xsm
+./xfs-interface load --int=13 ../spl/spl_progs/int13.xsm
+./xfs-interface load --int=14 ../spl/spl_progs/int14.xsm
 ./xfs-interface load --int=15 ../spl/spl_progs/int15.xsm
 ./xfs-interface load --module 0 ../spl/spl_progs/mod0.xsm
 ./xfs-interface load --module 1 ../spl/spl_progs/mod1.xsm
@@ -57,10 +65,14 @@ cd ../xfs-interface
 ./xfs-interface load --init ../expl/expl_progs/init.xsm
 ./xfs-interface load --idle ../expl/expl_progs/idle.xsm
 ./xfs-interface load --exec ../expl/expl_progs/even.xsm
-./xfs-interface load --exec ../expl/expl_progs/fork.xsm
+./xfs-interface load --exec ../expl/expl_progs/odd.xsm
 ./xfs-interface load --exec ../expl/expl_progs/list.xsm
 ./xfs-interface load --exec ../expl/expl_progs/list2.xsm
-./xfs-interface load --exec ../expl/expl_progs/odd.xsm
+./xfs-interface load --exec ../expl/expl_progs/rw_prog.xsm
+./xfs-interface load --exec ../expl/expl_progs/parent.xsm
 ./xfs-interface load --exec ../expl/expl_progs/pid.xsm
+./xfs-interface load --exec ../expl/expl_progs/child.xsm
+./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
+./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
 
 echo "Completed."

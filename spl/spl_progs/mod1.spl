@@ -24,6 +24,21 @@ if (functionNum == FREE_USER_AREA_PAGE) then
   alias userAreaPageNum R8;
   userAreaPageNum = [PROCESS_TABLE + currentPID*16 + 11];
 
+  alias counter R5;
+  counter = 496;
+  while (counter < 512) do
+    if([userAreaPageNum*512 + counter] == SEMAPHORE) then
+      R3 = currentPID;
+      backup;
+      R1 = RELEASE_SEMAPHORE;
+      R2 = [userAreaPageNum*512 + counter + 1];
+      call RESOURCE_MANAGER;
+      restore;
+    endif;
+
+    counter = counter + 2;
+  endwhile;
+
   backup;
   R1 = RELEASE_PAGE;
   R2 = userAreaPageNum;
