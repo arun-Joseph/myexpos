@@ -32,6 +32,22 @@ if (functionNum == FREE_USER_AREA_PAGE) then
 endif;
 
 if (functionNum == EXIT_PROCESS) then
+  if ([PROCESS_TABLE + R2*16 + 9] != INT_EXEC) then
+    alias counter R5;
+    counter = 0;
+    while (counter < MAX_PROC_NUM) do
+      if ([PROCESS_TABLE + counter*16 + 4] == WAIT_PROCESS && [PROCESS_TABLE + counter*16 + 5] == currentPID) then
+        [PROCESS_TABLE + counter*16 + 4] = READY;
+      endif;
+
+      if ([PROCESS_TABLE + counter*16 + 2] == currentPID) then
+        [PROCESS_TABLE + counter*16 + 2] = -1;
+      endif;
+
+      counter = counter + 1;
+    endwhile;
+  endif;
+
   backup;
   R1 = FREE_PAGE_TABLE;
   R2 = currentPID;
