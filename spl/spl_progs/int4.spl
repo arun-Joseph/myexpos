@@ -1,0 +1,180 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias sysCallNo R6;
+sysCallNo = [[PTBR + 2*(userSP - 5)/512]*512 + (userSP - 5)%512];
+
+alias fileName R7;
+fileName = [[PTBR + 2*(userSP - 4)/512]*512 + (userSP - 4)%512];
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+if (sysCallNo == INT_CREATE) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_CREATE;
+
+  alias permission R8;
+  permission = [[PTBR + 2*(userSP - 3)/512]*512 + (userSP - 3)%512];
+
+  alias inodeIndex R9;
+  inodeIndex = 0;
+  while (inodeIndex < MAX_FILE_NUM) do
+    if ([INODE_TABLE + inodeIndex*16 + 1] == fileName) then
+      break;
+    endif;
+    inodeIndex = inodeIndex + 1;
+  endwhile;
+
+  if (inodeIndex != MAX_FILE_NUM) then
+    [physicalAddrRetVal] = 0;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  inodeIndex = 0;
+  while (inodeIndex < MAX_FILE_NUM) do
+    if ([INODE_TABLE + inodeIndex*16 + 1] == -1) then
+      break;
+    endif;
+    inodeIndex = inodeIndex + 1;
+  endwhile;
+
+  if (inodeIndex == MAX_FILE_NUM) then
+    [physicalAddrRetVal] = -1;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  alias loc R10;
+  loc = INODE_TABLE + inodeIndex*16;
+  [loc] = DATA;
+  [loc + 1] = fileName;
+  [loc + 2] = 0;
+  [loc + 3] = [PROCESS_TABLE + currentPID*16 + 3];
+  [loc + 4] = permission;
+
+  alias counter R11;
+  counter = 8;
+  while (counter < 12) do
+    [loc + counter] = -1;
+    counter = counter + 1;
+  endwhile;
+
+  loc = ROOT_FILE + inodeIndex*8;
+  [loc] = fileName;
+  [loc + 1] = 0;
+  [loc + 2] = DATA;
+  [loc + 3] = [PROCESS_TABLE + currentPID*16 + 3];
+  [loc + 4] = permission;
+
+  [physicalAddrRetVal] = 0;
+endif;
+
+if (sysCallNo == INT_DELETE) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_DELETE;
+
+  alias flag R8;
+  flag = 0;
+
+  alias inodeIndex R9;
+  inodeIndex = 0;
+  while (inodeIndex < MAX_FILE_NUM) do
+    if ([INODE_TABLE + inodeIndex*16 + 1] == fileName) then
+      break;
+    endif;
+    inodeIndex = inodeIndex + 1;
+  endwhile;
+
+  if (inodeIndex == MAX_FILE_NUM) then
+    [physicalAddrRetVal] = 0;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  if ([INODE_TABLE + inodeIndex*16] != DATA) then
+    flag = 1;
+  endif;
+
+  if ([INODE_TABLE + inodeIndex*16 + 4] == EXCLUSIVE && [INODE_TABLE + inodeIndex*16 + 3] != 1
+      && [INODE_TABLE + inodeIndex*16 + 3] != [PROCESS_TABLE + currentPID*16 + 3]) then
+    flag = 1;
+  endif;
+
+  if (flag == 1) then
+    [physicalAddrRetVal] = -1;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  backup;
+  R1 = ACQUIRE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  if ([FILE_STATUS_TABLE + inodeIndex*4 + 1] != -1) then
+    [physicalAddrRetVal] = -2;
+  else
+    alias counter R10;
+    counter = 8;
+    while (counter < 12) do
+      alias disk R11;
+      disk = [INODE_TABLE + inodeIndex*16 + counter];
+
+      if (disk == -1) then
+        counter = counter + 1;
+        continue;
+      endif;
+
+      if ([BUFFER_TABLE + (disk%4)*4] == disk && [BUFFER_TABLE + (disk%4)*4 + 1] == 1) then
+        [BUFFER_TABLE + (disk%4)*4 + 1] = 0;
+      endif;
+
+      backup;
+      R1 = RELEASE_BLOCK;
+      R2 = disk;
+      R3 = currentPID;
+      call MEMORY_MANAGER;
+      restore;
+
+      counter = counter + 1;
+    endwhile;
+
+    counter = 0;
+    while (counter < 16) do
+      [INODE_TABLE + inodeIndex*16 + counter] = -1;
+      counter = counter + 1;
+    endwhile;
+    [INODE_TABLE + inodeIndex*16 + 2] = 0;
+
+    counter = 0;
+    while (counter < 8) do
+      [ROOT_FILE + inodeIndex*8 + counter] = -1;
+      counter = counter + 1;
+    endwhile;
+    [ROOT_FILE + inodeIndex*8 + 1] = 0;
+
+    [physicalAddrRetVal] = 0;
+  endif;
+
+  backup;
+  R1 = RELEASE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+endif;
+
+SP = userSP;
+ireturn;

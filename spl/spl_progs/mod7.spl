@@ -6,6 +6,8 @@ loadi(6, 19);
 loadi(7, 20);
 loadi(8, 21);
 loadi(9, 22);
+loadi(10, 23);
+loadi(11, 24);
 loadi(14, 27);
 loadi(15, 28);
 loadi(16, 29);
@@ -37,6 +39,7 @@ loadi(51, 64);
 loadi(59, 3);
 loadi(60, 4);
 loadi(61, 2);
+loadi(62, 5);
 loadi(63, 13);
 loadi(64, 14);
 loadi(65, 7);
@@ -67,6 +70,7 @@ PTBR = PAGE_TABLE_BASE + 20;
 [PTBR + 19] = "0110";
 
 [PROCESS_TABLE + 17] = 1;
+[PROCESS_TABLE + 19] = 1;
 [PROCESS_TABLE + 20] = CREATED;
 [PROCESS_TABLE + 27] = 80;
 [PROCESS_TABLE + 28] = 0;
@@ -110,6 +114,14 @@ while (counter < 128) do
   counter = counter + 1;
 endwhile;
 
+//FILE_STATUS_TABLE
+counter = 0;
+while (counter < MAX_FILE_NUM) do
+  [FILE_STATUS_TABLE + counter*4] = -1;
+  [FILE_STATUS_TABLE + counter*4 + 1] = -1;
+  counter = counter + 1;
+endwhile;
+
 //DISK_STATUS_TABLE
 [DISK_STATUS_TABLE] = 0;
 
@@ -119,6 +131,15 @@ endwhile;
 
 //TERMINAL_STATUS_TABLE
 [TERMINAL_STATUS_TABLE] = 0;
+
+//BUFFER_TABLE
+counter = 0;
+while (counter < MAX_BUFFER) do
+  [BUFFER_TABLE + counter*4] = -1;
+  [BUFFER_TABLE + counter*4 + 1] = 0;
+  [BUFFER_TABLE + counter*4 + 2] = -1;
+  counter = counter + 1;
+endwhile;
 
 //DISK_MAP_TABLE
 counter = 0;

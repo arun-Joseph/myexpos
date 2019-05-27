@@ -1,6 +1,29 @@
 alias functionNum R1;
 alias currentPID R2;
 
+if (functionNum == DISK_STORE) then
+  alias page R3;
+  alias block R4;
+
+  backup;
+  R1 = ACQUIRE_DISK;
+  R2 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  [DISK_STATUS_TABLE + 1] = 1;
+  [DISK_STATUS_TABLE + 2] = page;
+  [DISK_STATUS_TABLE + 3] = block;
+
+  store(page, block);
+
+  [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK;
+
+  backup;
+  call SCHEDULER;
+  restore;
+endif;
+
 if (functionNum == DISK_LOAD) then
   alias page R3;
   alias block R4;

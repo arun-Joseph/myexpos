@@ -1,1 +1,53 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+[PROCESS_TABLE + currentPID*16 + 9] = INT_SHUTDOWN;
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+if (currentPID != 1 || [PROCESS_TABLE + currentPID*16 + 3] != 1) then
+  [physicalAddrRetVal] = -1;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  SP = userSP;
+  ireturn;
+endif;
+
+backup;
+R1 = DISK_STORE;
+R2 = currentPID;
+R3 = 59;
+R4 = 3;
+call DEVICE_MANAGER;
+restore;
+
+backup;
+R1 = DISK_STORE;
+R2 = currentPID;
+R3 = 60;
+R4 = 4;
+call DEVICE_MANAGER;
+restore;
+
+backup;
+R1 = DISK_STORE;
+R2 = currentPID;
+R3 = 61;
+R4 = 2;
+call DEVICE_MANAGER;
+restore;
+
+backup;
+R1 = DISK_STORE;
+R2 = currentPID;
+R3 = 62;
+R4 = 5;
+call DEVICE_MANAGER;
+restore;
+
 halt;

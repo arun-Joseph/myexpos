@@ -12,6 +12,8 @@ cd ../expl
 ./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/pid.expl
 ./expl ./expl_progs/child.expl
+./expl ./expl_progs/create.expl
+./expl ./expl_progs/delete.expl
 ./expl ./expl_progs/merge_s.expl
 ./expl ./expl_progs/merge_p.expl
 
@@ -22,6 +24,7 @@ cd ../spl
 ./spl ./spl_progs/timer.spl
 ./spl ./spl_progs/disk.spl
 ./spl ./spl_progs/console.spl
+./spl ./spl_progs/int4.spl
 ./spl ./spl_progs/int6.spl
 ./spl ./spl_progs/int7.spl
 ./spl ./spl_progs/int8.spl
@@ -46,6 +49,7 @@ cd ../xfs-interface
 ./xfs-interface load --int=timer ../spl/spl_progs/timer.xsm
 ./xfs-interface load --int=disk ../spl/spl_progs/disk.xsm
 ./xfs-interface load --int=console ../spl/spl_progs/console.xsm
+./xfs-interface load --int=4 ../spl/spl_progs/int4.xsm
 ./xfs-interface load --int=6 ../spl/spl_progs/int6.xsm
 ./xfs-interface load --int=7 ../spl/spl_progs/int7.xsm
 ./xfs-interface load --int=8 ../spl/spl_progs/int8.xsm
@@ -72,6 +76,8 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/parent.xsm
 ./xfs-interface load --exec ../expl/expl_progs/pid.xsm
 ./xfs-interface load --exec ../expl/expl_progs/child.xsm
+./xfs-interface load --exec ../expl/expl_progs/create.xsm
+./xfs-interface load --exec ../expl/expl_progs/delete.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
 
