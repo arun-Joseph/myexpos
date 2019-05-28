@@ -8,6 +8,8 @@ loadi(8, 21);
 loadi(9, 22);
 loadi(10, 23);
 loadi(11, 24);
+loadi(12, 25);
+loadi(13, 26);
 loadi(14, 27);
 loadi(15, 28);
 loadi(16, 29);
@@ -32,6 +34,8 @@ loadi(42, 55);
 loadi(43, 56);
 loadi(44, 57);
 loadi(45, 58);
+loadi(46, 59);
+loadi(47, 60);
 loadi(48, 61);
 loadi(49, 62);
 loadi(50, 63);
@@ -91,6 +95,13 @@ endwhile;
 counter = 2;
 while (counter < MAX_PROC_NUM) do
   [PROCESS_TABLE + counter*16 + 4] = TERMINATED;
+  counter = counter + 1;
+endwhile;
+
+//OPEN_FILE_TABLE
+counter = 0;
+while (counter < MAX_OPENFILE_NUM) do
+  [OPEN_FILE_TABLE + counter*4] = -1;
   counter = counter + 1;
 endwhile;
 

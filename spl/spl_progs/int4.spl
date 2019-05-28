@@ -176,5 +176,8 @@ if (sysCallNo == INT_DELETE) then
   restore;
 endif;
 
+[physicalAddrRetVal] = 0;
+
 SP = userSP;
+[PROCESS_TABLE + currentPID*16 + 9] = 0;
 ireturn;

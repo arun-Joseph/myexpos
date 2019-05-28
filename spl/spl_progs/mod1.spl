@@ -27,7 +27,15 @@ if (functionNum == FREE_USER_AREA_PAGE) then
   alias counter R5;
   counter = 496;
   while (counter < 512) do
-    if([userAreaPageNum*512 + counter] == SEMAPHORE) then
+    if ([userAreaPageNum*512 + counter] == FILE) then
+      backup;
+      R1 = CLOSE;
+      R2 = [userAreaPageNum*512 + counter + 1];
+      call FILE_MANAGER;
+      restore;
+    endif;
+
+    if ([userAreaPageNum*512 + counter] == SEMAPHORE) then
       R3 = currentPID;
       backup;
       R1 = RELEASE_SEMAPHORE;

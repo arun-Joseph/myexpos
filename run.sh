@@ -14,6 +14,8 @@ cd ../expl
 ./expl ./expl_progs/child.expl
 ./expl ./expl_progs/create.expl
 ./expl ./expl_progs/delete.expl
+./expl ./expl_progs/read.expl
+./expl ./expl_progs/read2.expl
 ./expl ./expl_progs/merge_s.expl
 ./expl ./expl_progs/merge_p.expl
 
@@ -25,6 +27,7 @@ cd ../spl
 ./spl ./spl_progs/disk.spl
 ./spl ./spl_progs/console.spl
 ./spl ./spl_progs/int4.spl
+./spl ./spl_progs/int5.spl
 ./spl ./spl_progs/int6.spl
 ./spl ./spl_progs/int7.spl
 ./spl ./spl_progs/int8.spl
@@ -37,6 +40,7 @@ cd ../spl
 ./spl ./spl_progs/mod0.spl
 ./spl ./spl_progs/mod1.spl
 ./spl ./spl_progs/mod2.spl
+./spl ./spl_progs/mod3.spl
 ./spl ./spl_progs/mod4.spl
 ./spl ./spl_progs/mod5.spl
 ./spl ./spl_progs/mod7.spl
@@ -50,6 +54,7 @@ cd ../xfs-interface
 ./xfs-interface load --int=disk ../spl/spl_progs/disk.xsm
 ./xfs-interface load --int=console ../spl/spl_progs/console.xsm
 ./xfs-interface load --int=4 ../spl/spl_progs/int4.xsm
+./xfs-interface load --int=5 ../spl/spl_progs/int5.xsm
 ./xfs-interface load --int=6 ../spl/spl_progs/int6.xsm
 ./xfs-interface load --int=7 ../spl/spl_progs/int7.xsm
 ./xfs-interface load --int=8 ../spl/spl_progs/int8.xsm
@@ -62,6 +67,7 @@ cd ../xfs-interface
 ./xfs-interface load --module 0 ../spl/spl_progs/mod0.xsm
 ./xfs-interface load --module 1 ../spl/spl_progs/mod1.xsm
 ./xfs-interface load --module 2 ../spl/spl_progs/mod2.xsm
+./xfs-interface load --module 3 ../spl/spl_progs/mod3.xsm
 ./xfs-interface load --module 4 ../spl/spl_progs/mod4.xsm
 ./xfs-interface load --module 5 ../spl/spl_progs/mod5.xsm
 ./xfs-interface load --module 7 ../spl/spl_progs/mod7.xsm
@@ -78,7 +84,10 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/child.xsm
 ./xfs-interface load --exec ../expl/expl_progs/create.xsm
 ./xfs-interface load --exec ../expl/expl_progs/delete.xsm
+./xfs-interface load --exec ../expl/expl_progs/read.xsm
+./xfs-interface load --exec ../expl/expl_progs/read2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
+./xfs-interface load --data ../sample.dat
 
 echo "Completed."

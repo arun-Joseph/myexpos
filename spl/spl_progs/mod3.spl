@@ -1,0 +1,162 @@
+alias functionNum R1;
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+if (functionNum == BUFFERED_READ) then
+  alias disk R2;
+  alias offset R3;
+  alias wordAddr R4;
+
+  alias bufferNum R5;
+  bufferNum = disk%4;
+
+  backup;
+  R1 = ACQUIRE_BUFFER;
+  R2 = bufferNum;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  if ([BUFFER_TABLE + bufferNum*4] != disk) then
+    if ([BUFFER_TABLE + bufferNum*4 + 1] == 1) then
+      backup;
+      R1 = DISK_STORE;
+      R2 = currentPID;
+      R3 = bufferNum + 71;
+      R4 = [BUFFER_TABLE + bufferNum*4];
+      call DEVICE_MANAGER;
+      restore;
+
+      [BUFFER_TABLE + bufferNum*4 + 1] = 0;
+    endif;
+
+    backup;
+    R4 = disk;
+    R1 = DISK_LOAD;
+    R2 = currentPID;
+    R3 = bufferNum + 71;
+    call DEVICE_MANAGER;
+    restore;
+
+    [BUFFER_TABLE + bufferNum*4] = disk;
+  endif;
+
+  [wordAddr] = [(bufferNum + 71)*512 + offset];
+
+  backup;
+  R1 = RELEASE_BUFFER;
+  R2 = bufferNum;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+endif;
+
+if (functionNum == OPEN) then
+  alias fileName R2;
+
+  alias inodeIndex R5;
+  inodeIndex = 0;
+  while (inodeIndex < MAX_FILE_NUM) do
+    if ([INODE_TABLE + inodeIndex*16 + 1] == fileName) then
+      break;
+    endif;
+    inodeIndex = inodeIndex + 1;
+  endwhile;
+
+  if (inodeIndex == MAX_FILE_NUM) then
+    R0 = -1;
+    return;
+  endif;
+
+  multipush(R1, R2, R5, R15);
+  R1 = ACQUIRE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  multipop(R1, R2, R5, R15);
+
+  if (R0 == -1) then
+    return;
+  endif;
+
+  if ([INODE_TABLE + inodeIndex*16] == EXEC) then
+    backup;
+    R1 = RELEASE_INODE;
+    R2 = inodeIndex;
+    R3 = currentPID;
+    call RESOURCE_MANAGER;
+    restore;
+
+    R0 = -1;
+    return;
+  endif;
+
+  alias fileIndex R6;
+  fileIndex = 0;
+  while (fileIndex < MAX_OPENFILE_NUM) do
+    if ([OPEN_FILE_TABLE + fileIndex*4] == -1) then
+      break;
+    endif;
+    fileIndex = fileIndex + 1;
+  endwhile;
+
+  if (fileIndex == MAX_FILE_NUM) then
+    backup;
+    R1 = RELEASE_INODE;
+    R2 = inodeIndex;
+    R3 = currentPID;
+    call RESOURCE_MANAGER;
+    restore;
+
+    R0 = -2;
+    return;
+  endif;
+
+  if (fileName == "root") then
+    [OPEN_FILE_TABLE + fileIndex*4] = INODE_ROOT;
+  else
+    if([FILE_STATUS_TABLE + inodeIndex*4 + 1] == -1) then
+      [FILE_STATUS_TABLE + inodeIndex*4 + 1] = 1;
+    else
+      [FILE_STATUS_TABLE + inodeIndex*4 + 1] = [FILE_STATUS_TABLE + inodeIndex*4 + 1] + 1;
+    endif;
+    [OPEN_FILE_TABLE + fileIndex*4] = inodeIndex;
+  endif;
+
+  [OPEN_FILE_TABLE + fileIndex*4 + 1] = 1;
+  [OPEN_FILE_TABLE + fileIndex*4 + 2] = 0;
+
+  backup;
+  R1 = RELEASE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
+
+  R0 = fileIndex;
+endif;
+
+if (functionNum == CLOSE) then
+  alias fileIndex R2;
+
+  alias inodeIndex R5;
+  inodeIndex = [OPEN_FILE_TABLE + fileIndex*4];
+
+  [OPEN_FILE_TABLE + fileIndex*4 + 1] = [OPEN_FILE_TABLE + fileIndex*4 + 1] - 1;
+
+  if ([OPEN_FILE_TABLE + fileIndex*4 + 1] == 0) then
+    [OPEN_FILE_TABLE + fileIndex*4] = -1;
+
+    if ([INODE_TABLE + inodeIndex*16 + 1] != "root") then
+      [FILE_STATUS_TABLE + inodeIndex*4 + 1] = [FILE_STATUS_TABLE + inodeIndex*4 + 1] - 1;
+    endif;
+
+    if ([FILE_STATUS_TABLE + inodeIndex*4 + 1] == 0) then
+      [FILE_STATUS_TABLE + inodeIndex*4 + 1] = -1;
+    endif;
+  endif;
+
+  R0 = 0;
+endif;
+
+return;

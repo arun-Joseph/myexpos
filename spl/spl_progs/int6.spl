@@ -15,8 +15,93 @@ alias physicalAddrRetVal R14;
 physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
 
 if (fileDescriptor != -1) then
-  [physicalAddrRetVal] = -1;
-  ireturn;
+  alias userAreaPageNum R7;
+  userAreaPageNum = [PROCESS_TABLE + currentPID*16 + 11];
+
+  if (fileDescriptor < 0 || fileDescriptor >= 8 || [userAreaPageNum*512 + 496 + 2*fileDescriptor] != FILE) then
+    [physicalAddrRetVal] = -1;
+    SP = userSP;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    ireturn;
+  endif;
+
+  alias fileIndex R8;
+  fileIndex = [userAreaPageNum*512 + 496 + 2*fileDescriptor + 1];
+
+  alias inodeIndex R9;
+  inodeIndex = [OPEN_FILE_TABLE + fileIndex*4];
+
+  multipush(R5, R6, R7, R8, R9, R14, R15);
+  R1 = ACQUIRE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  multipop(R5, R6, R7, R8, R9, R14, R15);
+
+  if (R0 == -1) then
+    [physicalAddrRetVal] = -1;
+    SP = userSP;
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    ireturn;
+  endif;
+
+  alias Lseek R10;
+  Lseek = [OPEN_FILE_TABLE + fileIndex*4 + 2];
+
+  alias wordAddr R11;
+  wordAddr = [[PTBR + 2*(userSP - 3)/512]*512 + (userSP - 3)%512];
+
+  if ([OPEN_FILE_TABLE + fileIndex*4] == INODE_ROOT) then
+    if (Lseek == 480) then
+      restore;
+      R1 = RELEASE_INODE;
+      R2 = inodeIndex;
+      R3 = currentPID;
+      call RESOURCE_MANAGER;
+      restore;
+
+      [physicalAddrRetVal] = -2;
+      SP = userSP;
+      [PROCESS_TABLE + currentPID*16 + 9] = 0;
+      ireturn;
+    endif;
+
+    [[PTBR + 2*(wordAddr/512)]*512 + wordAddr%512] = [ROOT_FILE + Lseek];
+  else
+    alias fileSize R12;
+    fileSize = [INODE_TABLE + inodeIndex*16 + 2];
+
+    if (Lseek == fileSize) then
+      backup;
+      R1 = RELEASE_INODE;
+      R2 = inodeIndex;
+      R3 = currentPID;
+      call RESOURCE_MANAGER;
+      restore;
+
+      [physicalAddrRetVal] = -2;
+      SP = userSP;
+      [PROCESS_TABLE + currentPID*16 + 9] = 0;
+      ireturn;
+    endif;
+
+    backup;
+    R1 = BUFFERED_READ;
+    R2 = [INODE_TABLE + inodeIndex*16 + Lseek/512 + 8];
+    R3 = Lseek%512;
+    R4 = [PTBR + 2*(wordAddr/512)]*512 + wordAddr%512;
+    call FILE_MANAGER;
+    restore;
+  endif;
+
+  [OPEN_FILE_TABLE + fileIndex*4 + 2] = Lseek + 1;
+
+  backup;
+  R1 = RELEASE_INODE;
+  R2 = inodeIndex;
+  R3 = currentPID;
+  call RESOURCE_MANAGER;
+  restore;
 else
   alias wordAddr R7;
   wordAddr = [[PTBR + 2*(userSP - 3)/512]*512 + (userSP - 3)%512];
