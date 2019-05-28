@@ -1,0 +1,29 @@
+int main()
+{
+	decl
+		int temp, fp, counter;
+    str fileName, word;
+	enddecl
+
+	begin
+		read(fileName);
+    fp = exposcall("Open", fileName);
+    temp = exposcall("Seek", fp, 2048);
+
+    counter = 2000;
+    while (counter < 2514) do
+      temp = exposcall("Write", fp, counter);
+      counter = counter + 1;
+    endwhile;
+
+    temp = exposcall("Seek", fp, -1);
+    while (temp != -2) do
+      temp = exposcall("Read", fp, word);
+			write(word);
+			temp = exposcall("Seek", fp, -2);
+    endwhile;
+
+    temp = exposcall("Close", fp);
+		return 0;
+	end
+}

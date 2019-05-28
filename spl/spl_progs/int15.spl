@@ -11,12 +11,33 @@ SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
 alias physicalAddrRetVal R14;
 physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
 
-if (currentPID != 1 || [PROCESS_TABLE + currentPID*16 + 3] != 1) then
+if (currentPID != INIT_PROCESS || [PROCESS_TABLE + currentPID*16 + 3] != 1) then
   [physicalAddrRetVal] = -1;
   [PROCESS_TABLE + currentPID*16 + 9] = 0;
   SP = userSP;
   ireturn;
 endif;
+
+backup;
+R1 = KILL_ALL;
+R2 = currentPID;
+call PROCESS_MANAGER;
+restore;
+
+alias counter R6;
+counter = 0;
+while (counter < MAX_BUFFER) do
+  if ([BUFFER_TABLE + counter*4] != -1 && [BUFFER_TABLE + counter*4 + 1] == 1) then
+    backup;
+    R1 = DISK_STORE;
+    R2 = currentPID;
+    R3 = counter + 71;
+    R4 = [BUFFER_TABLE + counter*4];
+    call DEVICE_MANAGER;
+    restore;
+  endif;
+  counter = counter + 1;
+endwhile;
 
 backup;
 R1 = DISK_STORE;

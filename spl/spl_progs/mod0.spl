@@ -30,7 +30,7 @@ if (functionNum == RELEASE_BUFFER) then
   alias counter R5;
   counter = 0;
   while (counter < MAX_PROC_NUM) do
-    if ([PROCESS_TABLE + counter*16 + 4] == WAIT_BUFFER && [PROCESS_TABLE + counter*16 + 5] == currentPID) then
+    if ([PROCESS_TABLE + counter*16 + 4] == WAIT_BUFFER && [PROCESS_TABLE + counter*16 + 5] == bufferNum) then
       [PROCESS_TABLE + counter*16 + 4] = READY;
       [PROCESS_TABLE + counter*16 + 5] = "";
     endif;

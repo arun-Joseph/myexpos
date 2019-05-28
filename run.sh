@@ -9,6 +9,7 @@ cd ../expl
 ./expl ./expl_progs/list.expl
 ./expl ./expl_progs/list2.expl
 ./expl ./expl_progs/rw_prog.expl
+./expl ./expl_progs/rw_prog2.expl
 ./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/pid.expl
 ./expl ./expl_progs/child.expl
@@ -16,8 +17,15 @@ cd ../expl
 ./expl ./expl_progs/delete.expl
 ./expl ./expl_progs/read.expl
 ./expl ./expl_progs/read2.expl
+./expl ./expl_progs/write.expl
+./expl ./expl_progs/write2.expl
+./expl ./expl_progs/ls.expl
+./expl ./expl_progs/rm.expl
+./expl ./expl_progs/cp.expl
+./expl ./expl_progs/cat.expl
 ./expl ./expl_progs/merge_s.expl
 ./expl ./expl_progs/merge_p.expl
+./expl ./expl_progs/merge_f.expl
 
 echo "SPL"
 cd ../spl
@@ -79,6 +87,7 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/list.xsm
 ./xfs-interface load --exec ../expl/expl_progs/list2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/rw_prog.xsm
+./xfs-interface load --exec ../expl/expl_progs/rw_prog2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/parent.xsm
 ./xfs-interface load --exec ../expl/expl_progs/pid.xsm
 ./xfs-interface load --exec ../expl/expl_progs/child.xsm
@@ -86,8 +95,15 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/delete.xsm
 ./xfs-interface load --exec ../expl/expl_progs/read.xsm
 ./xfs-interface load --exec ../expl/expl_progs/read2.xsm
+./xfs-interface load --exec ../expl/expl_progs/write.xsm
+./xfs-interface load --exec ../expl/expl_progs/write2.xsm
+./xfs-interface load --exec ../expl/expl_progs/ls.xsm
+./xfs-interface load --exec ../expl/expl_progs/rm.xsm
+./xfs-interface load --exec ../expl/expl_progs/cp.xsm
+./xfs-interface load --exec ../expl/expl_progs/cat.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
+./xfs-interface load --exec ../expl/expl_progs/merge_f.xsm
 ./xfs-interface load --data ../sample.dat
 
 echo "Completed."

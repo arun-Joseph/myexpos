@@ -142,4 +142,45 @@ if (functionNum == FREE_PAGE_TABLE) then
   endwhile;
 endif;
 
+if (functionNum == KILL_ALL) then
+  alias counter R5;
+  counter = 0;
+  while (counter < MAX_FILE_NUM) do
+    if ([INODE_TABLE + counter*16 + 1] != -1) then
+      backup;
+      R3 = currentPID;
+      R1 = ACQUIRE_INODE;
+      R2 = counter;
+      call RESOURCE_MANAGER;
+      restore;
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  counter = INIT_PROCESS;
+  while (counter < MAX_PROC_NUM) do
+    if (counter != currentPID && [PROCESS_TABLE + counter*16 + 4] != TERMINATED) then
+      backup;
+      R1 = EXIT_PROCESS;
+      R2 = counter;
+      call PROCESS_MANAGER;
+      restore;
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  counter = 0;
+  while (counter < MAX_FILE_NUM) do
+    if ([INODE_TABLE + counter*16 + 1] != -1) then
+      backup;
+      R3 = currentPID;
+      R1 = RELEASE_INODE;
+      R2 = counter;
+      call RESOURCE_MANAGER;
+      restore;
+    endif;
+    counter = counter + 1;
+  endwhile;
+endif;
+
 return;
