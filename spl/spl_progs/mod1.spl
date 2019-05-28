@@ -157,7 +157,7 @@ if (functionNum == KILL_ALL) then
     counter = counter + 1;
   endwhile;
 
-  counter = INIT_PROCESS;
+  counter = SHELL_PROCESS;
   while (counter < MAX_PROC_NUM) do
     if (counter != currentPID && [PROCESS_TABLE + counter*16 + 4] != TERMINATED) then
       backup;

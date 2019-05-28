@@ -1,0 +1,31 @@
+int main()
+{
+decl
+  int temp, fp, counter, userID, fileUser;
+  str username, fileName;
+enddecl
+
+begin
+  read(username);
+  userID = exposcall("Getuid", username);
+  fp = exposcall("Open", "root");
+
+  counter = 0;
+  while (counter < 60) do
+    temp = exposcall("Read", fp, fileName);
+    if (fileName != "-1") then
+      temp = exposcall("Seek", fp, 2);
+      temp = exposcall("Read", fp, fileUser);
+      if (fileUser == userID) then
+        temp = exposcall("Delete", fileName);
+      endif;
+    endif;
+    temp = exposcall("Seek", fp, 4);
+    counter = counter + 1;
+  endwhile;
+
+  temp = exposcall("Close", fp);
+  temp = exposcall("Remusr", username);
+  return 0;
+end
+}

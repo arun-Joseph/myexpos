@@ -2,7 +2,8 @@
 
 echo "ExpL"
 cd ../expl
-./expl ./expl_progs/init.expl
+./expl ./expl_progs/login.expl
+./expl ./expl_progs/shell.expl
 ./expl ./expl_progs/idle.expl
 ./expl ./expl_progs/even.expl
 ./expl ./expl_progs/odd.expl
@@ -23,6 +24,8 @@ cd ../expl
 ./expl ./expl_progs/rm.expl
 ./expl ./expl_progs/cp.expl
 ./expl ./expl_progs/cat.expl
+./expl ./expl_progs/lu.expl
+./expl ./expl_progs/ru.expl
 ./expl ./expl_progs/merge_s.expl
 ./expl ./expl_progs/merge_p.expl
 ./expl ./expl_progs/merge_f.expl
@@ -42,9 +45,12 @@ cd ../spl
 ./spl ./spl_progs/int9.spl
 ./spl ./spl_progs/int10.spl
 ./spl ./spl_progs/int11.spl
+./spl ./spl_progs/int12.spl
 ./spl ./spl_progs/int13.spl
 ./spl ./spl_progs/int14.spl
 ./spl ./spl_progs/int15.spl
+./spl ./spl_progs/int16.spl
+./spl ./spl_progs/int17.spl
 ./spl ./spl_progs/mod0.spl
 ./spl ./spl_progs/mod1.spl
 ./spl ./spl_progs/mod2.spl
@@ -69,9 +75,12 @@ cd ../xfs-interface
 ./xfs-interface load --int=9 ../spl/spl_progs/int9.xsm
 ./xfs-interface load --int=10 ../spl/spl_progs/int10.xsm
 ./xfs-interface load --int=11 ../spl/spl_progs/int11.xsm
+./xfs-interface load --int=12 ../spl/spl_progs/int12.xsm
 ./xfs-interface load --int=13 ../spl/spl_progs/int13.xsm
 ./xfs-interface load --int=14 ../spl/spl_progs/int14.xsm
 ./xfs-interface load --int=15 ../spl/spl_progs/int15.xsm
+./xfs-interface load --int=16 ../spl/spl_progs/int16.xsm
+./xfs-interface load --int=17 ../spl/spl_progs/int17.xsm
 ./xfs-interface load --module 0 ../spl/spl_progs/mod0.xsm
 ./xfs-interface load --module 1 ../spl/spl_progs/mod1.xsm
 ./xfs-interface load --module 2 ../spl/spl_progs/mod2.xsm
@@ -80,7 +89,8 @@ cd ../xfs-interface
 ./xfs-interface load --module 5 ../spl/spl_progs/mod5.xsm
 ./xfs-interface load --module 7 ../spl/spl_progs/mod7.xsm
 ./xfs-interface load --library ../expl/library.lib
-./xfs-interface load --init ../expl/expl_progs/init.xsm
+./xfs-interface load --init ../expl/expl_progs/login.xsm
+./xfs-interface load --shell ../expl/expl_progs/shell.xsm
 ./xfs-interface load --idle ../expl/expl_progs/idle.xsm
 ./xfs-interface load --exec ../expl/expl_progs/even.xsm
 ./xfs-interface load --exec ../expl/expl_progs/odd.xsm
@@ -101,6 +111,8 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/rm.xsm
 ./xfs-interface load --exec ../expl/expl_progs/cp.xsm
 ./xfs-interface load --exec ../expl/expl_progs/cat.xsm
+./xfs-interface load --exec ../expl/expl_progs/lu.xsm
+./xfs-interface load --exec ../expl/expl_progs/ru.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_f.xsm

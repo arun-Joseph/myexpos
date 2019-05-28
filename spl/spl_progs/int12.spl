@@ -1,0 +1,34 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+[PROCESS_TABLE + currentPID*16 + 9] = INT_LOGOUT;
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+if (currentPID != SHELL_PROCESS) then
+  [physicalAddrRetVal] = -2;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  SP = userSP;
+  ireturn;
+endif;
+
+backup;
+R1 = KILL_ALL;
+R2 = currentPID;
+call PROCESS_MANAGER;
+restore;
+
+[PROCESS_TABLE + 36] = TERMINATED;
+[[PTBR + 16]*512] = [[PTBR + 8]*512 + 1];
+[PROCESS_TABLE + 45] = 4096;
+
+[PROCESS_TABLE + 20] = READY;
+[SYSTEM_STATUS_TABLE] = KERNEL;
+
+call SCHEDULER;

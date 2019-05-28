@@ -1,0 +1,19 @@
+int main()
+{
+decl
+  int counter, username;
+enddecl
+
+begin
+  counter = 0;
+  while (counter < 16) do
+    username = exposcall("Getuname", counter);
+    if (username != -1) then
+      write(username);
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  return 0;
+end
+}

@@ -11,7 +11,7 @@ SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
 alias physicalAddrRetVal R14;
 physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
 
-if (currentPID != INIT_PROCESS || [PROCESS_TABLE + currentPID*16 + 3] != 1) then
+if (currentPID != SHELL_PROCESS || [PROCESS_TABLE + currentPID*16 + 3] != ROOT) then
   [physicalAddrRetVal] = -1;
   [PROCESS_TABLE + currentPID*16 + 9] = 0;
   SP = userSP;
