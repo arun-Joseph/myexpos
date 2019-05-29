@@ -1,0 +1,99 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 5*CORE + 1];
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias sysCallNo R6;
+sysCallNo = [[PTBR + 2*(userSP - 5)/512]*512 + (userSP - 5)%512];
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+backup;
+R1 = ACQUIRE_KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+if (sysCallNo == INT_GETPID) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_GETPID;
+  [physicalAddrRetVal] = [PROCESS_TABLE + currentPID*16 + 1];
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+endif;
+
+if (sysCallNo == INT_GETPPID) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_GETPPID;
+  [physicalAddrRetVal] = [PROCESS_TABLE + currentPID*16 + 2];
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+endif;
+
+if (sysCallNo == INT_WAIT) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_WAIT;
+
+  alias waitPID R7;
+  waitPID = [[PTBR + 2*(userSP - 4)/512]*512 + (userSP - 4)%512];
+
+  if (waitPID < 0 || waitPID >= MAX_PROC_NUM || waitPID == currentPID
+    || [PROCESS_TABLE + waitPID*16 + 4] == TERMINATED) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  [PROCESS_TABLE + currentPID*16 + 4] = WAIT_PROCESS;
+  [PROCESS_TABLE + currentPID*16 + 5] = waitPID;
+
+  backup;
+  R1 = RELEASE_LOCK;
+  R2 = KERN_LOCK;
+  call ACCESS_CONTROL;
+  restore;
+
+  backup;
+  call SCHEDULER;
+  restore;
+
+  backup;
+  R1 = ACQUIRE_KERN_LOCK;
+  call ACCESS_CONTROL;
+  restore;
+
+  [physicalAddrRetVal] = 0;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+endif;
+
+if (sysCallNo == INT_SIGNAL) then
+  [PROCESS_TABLE + currentPID*16 + 9] = INT_SIGNAL;
+
+  alias counter R7;
+  counter = 0;
+  while (counter < MAX_PROC_NUM) do
+    if([PROCESS_TABLE + counter*16 + 4] == WAIT_PROCESS && [PROCESS_TABLE + counter*16 + 5] == currentPID) then
+      [PROCESS_TABLE + counter*16 + 4] = READY;
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  [physicalAddrRetVal] = 0;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+endif;
+
+backup;
+R1 = RELEASE_LOCK;
+R2 = KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+SP = userSP;
+ireturn;

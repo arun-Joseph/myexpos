@@ -1,5 +1,5 @@
 *.o
-*lex*
+*lex.*
 *tab*
 *disk.xfs
 *assemblycode.xsm
@@ -8,6 +8,6 @@
 *mem
 expl/expl-bin
 expl/ltranslate
-spl/spl
-xfs-interface/xfs-interface
-xsm/xsm
+nespl/spl
+nexfs-interface/xfs-interface
+nexsm/xsm

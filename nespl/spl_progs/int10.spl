@@ -1,0 +1,26 @@
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE + 5*CORE + 1];
+
+[PROCESS_TABLE + currentPID*16 + 9] = INT_EXIT;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+backup;
+R1 = ACQUIRE_KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+backup;
+R1 = EXIT_PROCESS;
+R2 = currentPID;
+call PROCESS_MANAGER;
+restore;
+
+backup;
+R1 = RELEASE_LOCK;
+R2 = KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+call SCHEDULER;

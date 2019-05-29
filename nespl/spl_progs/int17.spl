@@ -1,0 +1,78 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 5*CORE + 1];
+[PROCESS_TABLE + currentPID*16 + 9] = INT_LOGIN;
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias userID R6;
+userID = [[PTBR + 2*(userSP - 4)/512]*512 + (userSP - 4)%512];
+
+alias password R7;
+password = [[PTBR + 2*(userSP - 3)/512]*512 + (userSP - 3)%512];
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+if (currentPID != LOGIN_PROCESS) then
+  [physicalAddrRetVal] = -2;
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  SP = userSP;
+  ireturn;
+endif;
+
+backup;
+R1 = ACQUIRE_KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+alias userIndex R8;
+userIndex = 0;
+while (userIndex < MAX_USER_NUM) do
+  if ([USER_TABLE + 2*userIndex] == userID) then
+    break;
+  endif;
+  userIndex = userIndex + 1;
+endwhile;
+
+encrypt password;
+
+if (userIndex == MAX_USER_NUM || [USER_TABLE + 2*userIndex + 1] != password) then
+  [physicalAddrRetVal] = -1;
+
+  backup;
+  R1 = RELEASE_LOCK;
+  R2 = KERN_LOCK;
+  call ACCESS_CONTROL;
+  restore;
+
+  [PROCESS_TABLE + currentPID*16 + 9] = 0;
+  SP = userSP;
+  ireturn;
+endif;
+
+[PROCESS_TABLE + 35] = userIndex;
+[PROCESS_TABLE + 36] = CREATED;
+[SYSTEM_STATUS_TABLE] = userIndex;
+
+[PROCESS_TABLE + 20] = WAIT_PROCESS;
+[PROCESS_TABLE + 21] = 2;
+
+backup;
+R1 = RELEASE_LOCK;
+R2 = KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+backup;
+call SCHEDULER;
+restore;
+
+[physicalAddrRetVal] = 0;
+
+SP = userSP;
+[PROCESS_TABLE + currentPID*16 + 9] = 0;
+ireturn;

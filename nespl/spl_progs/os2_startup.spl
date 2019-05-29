@@ -1,0 +1,46 @@
+//IDLE2_PROCESS
+PTBR = PAGE_TABLE_BASE + 20*IDLE2_PROCESS;
+
+[PTBR + 0] = -1;
+[PTBR + 1] = "0000";
+[PTBR + 2] = -1;
+[PTBR + 3] = "0000";
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
+[PTBR + 8] = 69;
+[PTBR + 9] = "0100";
+[PTBR + 10] = -1;
+[PTBR + 11] = "0000";
+[PTBR + 12] = -1;
+[PTBR + 13] = "0000";
+[PTBR + 14] = -1;
+[PTBR + 15] = "0000";
+[PTBR + 16] = 83;
+[PTBR + 17] = "0110";
+[PTBR + 18] = -1;
+[PTBR + 19] = "0000";
+
+alias process_table_entry R0;
+process_table_entry = PROCESS_TABLE + IDLE2_PROCESS*16;
+[process_table_entry] = 0;
+[process_table_entry + 1] = IDLE2_PROCESS;
+[process_table_entry + 2] = IDLE2_PROCESS;
+[process_table_entry + 3] = KERNEL;
+[process_table_entry + 4] = RUNNING;
+[process_table_entry + 11] = 84;
+[process_table_entry + 12] = 0;
+[process_table_entry + 13] = 8*512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = 10;
+
+[83*512] = [69*512 + 1];
+
+[SYSTEM_STATUS_TABLE + 6] = IDLE2_PROCESS;
+
+PTBR = PAGE_TABLE_BASE + 20*IDLE2_PROCESS;
+PTLR = 10;
+SP = 8*512;
+
+ireturn;

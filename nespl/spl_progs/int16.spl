@@ -1,0 +1,268 @@
+alias currentPID R15;
+currentPID = [SYSTEM_STATUS_TABLE + 5*CORE + 1];
+
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + currentPID*16 + 13] = SP;
+SP = [PROCESS_TABLE + currentPID*16 + 11]*512 - 1;
+
+alias sysCallNo R6;
+sysCallNo = [[PTBR + 2*(userSP - 5)/512]*512 + (userSP - 5)%512];
+[PROCESS_TABLE + currentPID*16 + 9] = sysCallNo;
+
+alias userName R7;
+userName = [[PTBR + 2*(userSP - 4)/512]*512 + (userSP - 4)%512];
+
+alias password R8;
+password = [[PTBR + 2*(userSP - 3)/512]*512 + (userSP - 3)%512];
+
+alias physicalAddrRetVal R14;
+physicalAddrRetVal = [PTBR + 2*(userSP - 1)/512]*512 + (userSP - 1)%512;
+
+backup;
+R1 = ACQUIRE_KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+if (sysCallNo == INT_NEWUSR) then
+  if ([SYSTEM_STATUS_TABLE] != ROOT || currentPID != SHELL_PROCESS) then
+    [physicalAddrRetVal] = -2;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  alias userIndex R9;
+  userIndex = 0;
+  while (userIndex < MAX_USER_NUM) do
+    if ([USER_TABLE + 2*userIndex] == userName) then
+      [physicalAddrRetVal] = -1;
+
+      backup;
+      R1 = RELEASE_LOCK;
+      R2 = KERN_LOCK;
+      call ACCESS_CONTROL;
+      restore;
+
+      [PROCESS_TABLE + currentPID*16 + 9] = 0;
+      SP = userSP;
+      ireturn;
+    endif;
+    userIndex = userIndex + 1;
+  endwhile;
+
+  userIndex = 0;
+  while (userIndex < MAX_USER_NUM) do
+    if([USER_TABLE + 2*userIndex] == -1) then
+      break;
+    endif;
+    userIndex = userIndex + 1;
+  endwhile;
+
+  if (userIndex == MAX_USER_NUM) then
+    [physicalAddrRetVal] = -3;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  encrypt password;
+  [USER_TABLE + 2*userIndex] = userName;
+  [USER_TABLE + 2*userIndex + 1] = password;
+
+  [physicalAddrRetVal] = 0;
+endif;
+
+if (sysCallNo == INT_REMUSR) then
+  if ([SYSTEM_STATUS_TABLE] != ROOT || currentPID != SHELL_PROCESS
+    || userName == "root" || userName == "kernel") then
+    [physicalAddrRetVal] = -2;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  alias userIndex R9;
+  userIndex = 0;
+  while (userIndex < MAX_USER_NUM) do
+    if([USER_TABLE + 2*userIndex] == userName) then
+      break;
+    endif;
+    userIndex = userIndex + 1;
+  endwhile;
+
+  if (userIndex == MAX_USER_NUM) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  alias fileIndex R10;
+  fileIndex = 0;
+  while (fileIndex < MAX_FILE_NUM) do
+    if ([ROOT_FILE + fileIndex*8 + 3] == userName) then
+      [physicalAddrRetVal] = -1;
+
+      backup;
+      R1 = RELEASE_LOCK;
+      R2 = KERN_LOCK;
+      call ACCESS_CONTROL;
+      restore;
+
+      [PROCESS_TABLE + currentPID*16 + 9] = 0;
+      SP = userSP;
+      ireturn;
+    endif;
+    fileIndex = fileIndex + 1;
+  endwhile;
+
+  [USER_TABLE + 2*userIndex] = -1;
+  [USER_TABLE + 2*userIndex + 1] = -1;
+
+  [physicalAddrRetVal] = 0;
+endif;
+
+if (sysCallNo == INT_SETPWD) then
+  if (currentPID != SHELL_PROCESS) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  alias userIndex R9;
+  userIndex = 0;
+  while (userIndex < MAX_USER_NUM) do
+    if([USER_TABLE + 2*userIndex] == userName) then
+      break;
+    endif;
+    userIndex = userIndex + 1;
+  endwhile;
+
+  if (userIndex == MAX_USER_NUM) then
+    [physicalAddrRetVal] = -2;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  if ([SYSTEM_STATUS_TABLE] != userIndex && [SYSTEM_STATUS_TABLE] != ROOT) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  encrypt password;
+  [USER_TABLE + 2*userIndex + 1] = password;
+
+  [physicalAddrRetVal] = 0;
+endif;
+
+if (sysCallNo == INT_GETUNAME) then
+  alias userIndex R7;
+
+  if (userIndex < 0 || userIndex >= MAX_USER_NUM || [USER_TABLE + 2*userIndex] == -1) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  [physicalAddrRetVal] = [USER_TABLE + 2*userIndex];
+endif;
+
+if (sysCallNo == INT_GETUID) then
+  alias userIndex R9;
+  userIndex = 0;
+  while (userIndex < MAX_USER_NUM) do
+    if ([USER_TABLE + 2*userIndex] == userName) then
+      break;
+    endif;
+    userIndex = userIndex + 1;
+  endwhile;
+
+  if (userIndex == MAX_USER_NUM) then
+    [physicalAddrRetVal] = -1;
+
+    backup;
+    R1 = RELEASE_LOCK;
+    R2 = KERN_LOCK;
+    call ACCESS_CONTROL;
+    restore;
+
+    [PROCESS_TABLE + currentPID*16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+  endif;
+
+  [physicalAddrRetVal] = userIndex;
+endif;
+
+backup;
+R1 = RELEASE_LOCK;
+R2 = KERN_LOCK;
+call ACCESS_CONTROL;
+restore;
+
+[PROCESS_TABLE + currentPID*16 + 9] = 0;
+SP = userSP;
+ireturn;
