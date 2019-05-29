@@ -1,23 +1,12 @@
 alias counter R0;
+alias process_table_entry R1;
 
 counter = 2;
-while (counter < 40) do
+while (counter < 54) do
   loadi(counter, counter + 13);
   counter = counter + 1;
 endwhile;
 
-loadi(40, 53);
-loadi(41, 54);
-loadi(42, 55);
-loadi(43, 56);
-loadi(44, 57);
-loadi(45, 58);
-loadi(46, 59);
-loadi(47, 60);
-loadi(48, 61);
-loadi(49, 62);
-loadi(50, 63);
-loadi(51, 64);
 loadi(59, 3);
 loadi(60, 4);
 loadi(61, 2);
@@ -30,7 +19,7 @@ loadi(67, 9);
 loadi(68, 10);
 
 //LOGIN_PROCESS
-PTBR = PAGE_TABLE_BASE + 20;
+PTBR = PAGE_TABLE_BASE + 20*LOGIN_PROCESS;
 
 [PTBR + 0] = 63;
 [PTBR + 1] = "0100";
@@ -53,16 +42,17 @@ PTBR = PAGE_TABLE_BASE + 20;
 [PTBR + 18] = -1;
 [PTBR + 19] = "0000";
 
-[PROCESS_TABLE + 16] = 0;
-[PROCESS_TABLE + 17] = LOGIN_PROCESS;
-[PROCESS_TABLE + 18] = LOGIN_PROCESS;
-[PROCESS_TABLE + 19] = KERNEL;
-[PROCESS_TABLE + 20] = CREATED;
-[PROCESS_TABLE + 27] = 77;
-[PROCESS_TABLE + 28] = 0;
-[PROCESS_TABLE + 29] = 8*512;
-[PROCESS_TABLE + 30] = PAGE_TABLE_BASE + 20;
-[PROCESS_TABLE + 31] = 10;
+process_table_entry = PROCESS_TABLE + LOGIN_PROCESS*16;
+[process_table_entry] = 0;
+[process_table_entry + 1] = LOGIN_PROCESS;
+[process_table_entry + 2] = LOGIN_PROCESS;
+[process_table_entry + 3] = KERNEL;
+[process_table_entry + 4] = CREATED;
+[process_table_entry + 11] = 77;
+[process_table_entry + 12] = 0;
+[process_table_entry + 13] = 8*512;
+[process_table_entry + 14] = PAGE_TABLE_BASE + 20;
+[process_table_entry + 15] = 10;
 
 [66*512] = [65*512 + 1];
 
@@ -73,7 +63,7 @@ while(counter < 512) do
 endwhile;
 
 //SHELL_PROCESS
-PTBR = PAGE_TABLE_BASE + 40;
+PTBR = PAGE_TABLE_BASE + 20*SHELL_PROCESS;
 
 [PTBR + 0] = 63;
 [PTBR + 1] = "0100";
@@ -96,16 +86,17 @@ PTBR = PAGE_TABLE_BASE + 40;
 [PTBR + 18] = 79;
 [PTBR + 19] = "0110";
 
-[PROCESS_TABLE + 32] = 0;
-[PROCESS_TABLE + 33] = SHELL_PROCESS;
-[PROCESS_TABLE + 34] = SHELL_PROCESS;
-[PROCESS_TABLE + 35] = ROOT;
-[PROCESS_TABLE + 36] = TERMINATED;
-[PROCESS_TABLE + 43] = 80;
-[PROCESS_TABLE + 44] = 0;
-[PROCESS_TABLE + 45] = 8*512;
-[PROCESS_TABLE + 46] = PAGE_TABLE_BASE + 40;
-[PROCESS_TABLE + 47] = 10;
+process_table_entry = PROCESS_TABLE + SHELL_PROCESS*16;
+[process_table_entry + 0] = 0;
+[process_table_entry + 1] = SHELL_PROCESS;
+[process_table_entry + 2] = SHELL_PROCESS;
+[process_table_entry + 3] = ROOT;
+[process_table_entry + 4] = TERMINATED;
+[process_table_entry + 11] = 80;
+[process_table_entry + 12] = 0;
+[process_table_entry + 13] = 8*512;
+[process_table_entry + 14] = PAGE_TABLE_BASE + 40;
+[process_table_entry + 15] = 10;
 
 [78*512] = [67*512 + 1];
 
@@ -117,7 +108,8 @@ endwhile;
 
 //PROCESS_TABLE
 counter = 3;
-while (counter < MAX_PROC_NUM) do
+while (counter < SWAPPER_DAEMON) do
+  [PROCESS_TABLE + counter*16] = 0;
   [PROCESS_TABLE + counter*16 + 4] = TERMINATED;
   counter = counter + 1;
 endwhile;
@@ -139,7 +131,7 @@ endwhile;
 
 //MEMORY_FREE_LIST
 counter = 0;
-while (counter < 81) do
+while (counter < 83) do
   [MEMORY_FREE_LIST + counter] = 1;
   counter = counter + 1;
 endwhile;
@@ -161,8 +153,10 @@ endwhile;
 [DISK_STATUS_TABLE] = 0;
 
 //SYSTEM_STATUS_TABLE
-[SYSTEM_STATUS_TABLE + 2] = 47;
+[SYSTEM_STATUS_TABLE + 2] = 45;
 [SYSTEM_STATUS_TABLE + 3] = 0;
+[SYSTEM_STATUS_TABLE + 4] = 0;
+[SYSTEM_STATUS_TABLE + 5] = 0;
 
 //TERMINAL_STATUS_TABLE
 [TERMINAL_STATUS_TABLE] = 0;

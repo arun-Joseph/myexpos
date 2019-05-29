@@ -13,6 +13,7 @@ cd ../expl
 ./expl ./expl_progs/rw_prog2.expl
 ./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/pid.expl
+./expl ./expl_progs/delay.expl
 ./expl ./expl_progs/child.expl
 ./expl ./expl_progs/create.expl
 ./expl ./expl_progs/delete.expl
@@ -26,9 +27,17 @@ cd ../expl
 ./expl ./expl_progs/cat.expl
 ./expl ./expl_progs/lu.expl
 ./expl ./expl_progs/ru.expl
+./expl ./expl_progs/test1.expl
+./expl ./expl_progs/pgm1.expl
+./expl ./expl_progs/test2.expl
+./expl ./expl_progs/pgm2.expl
 ./expl ./expl_progs/merge_s.expl
 ./expl ./expl_progs/merge_p.expl
 ./expl ./expl_progs/merge_f.expl
+./expl ./expl_progs/merge.expl
+./expl ./expl_progs/m_store.expl
+./expl ./expl_progs/m_sort.expl
+./expl ./expl_progs/m_merge.expl
 
 echo "SPL"
 cd ../spl
@@ -57,6 +66,7 @@ cd ../spl
 ./spl ./spl_progs/mod3.spl
 ./spl ./spl_progs/mod4.spl
 ./spl ./spl_progs/mod5.spl
+./spl ./spl_progs/mod6.spl
 ./spl ./spl_progs/mod7.spl
 
 echo "XFS Interface"
@@ -87,6 +97,7 @@ cd ../xfs-interface
 ./xfs-interface load --module 3 ../spl/spl_progs/mod3.xsm
 ./xfs-interface load --module 4 ../spl/spl_progs/mod4.xsm
 ./xfs-interface load --module 5 ../spl/spl_progs/mod5.xsm
+./xfs-interface load --module 6 ../spl/spl_progs/mod6.xsm
 ./xfs-interface load --module 7 ../spl/spl_progs/mod7.xsm
 ./xfs-interface load --library ../expl/library.lib
 ./xfs-interface load --init ../expl/expl_progs/login.xsm
@@ -100,6 +111,7 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/rw_prog2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/parent.xsm
 ./xfs-interface load --exec ../expl/expl_progs/pid.xsm
+./xfs-interface load --exec ../expl/expl_progs/delay.xsm
 ./xfs-interface load --exec ../expl/expl_progs/child.xsm
 ./xfs-interface load --exec ../expl/expl_progs/create.xsm
 ./xfs-interface load --exec ../expl/expl_progs/delete.xsm
@@ -113,9 +125,17 @@ cd ../xfs-interface
 ./xfs-interface load --exec ../expl/expl_progs/cat.xsm
 ./xfs-interface load --exec ../expl/expl_progs/lu.xsm
 ./xfs-interface load --exec ../expl/expl_progs/ru.xsm
+./xfs-interface load --exec ../expl/expl_progs/test1.xsm
+./xfs-interface load --exec ../expl/expl_progs/pgm1.xsm
+./xfs-interface load --exec ../expl/expl_progs/test2.xsm
+./xfs-interface load --exec ../expl/expl_progs/pgm2.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_s.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_p.xsm
 ./xfs-interface load --exec ../expl/expl_progs/merge_f.xsm
+./xfs-interface load --exec ../expl/expl_progs/merge.xsm
+./xfs-interface load --exec ../expl/expl_progs/m_store.xsm
+./xfs-interface load --exec ../expl/expl_progs/m_sort.xsm
+./xfs-interface load --exec ../expl/expl_progs/m_merge.xsm
 ./xfs-interface load --data ../sample.dat
 
 echo "Completed."

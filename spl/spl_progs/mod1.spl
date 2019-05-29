@@ -158,7 +158,7 @@ if (functionNum == KILL_ALL) then
   endwhile;
 
   counter = SHELL_PROCESS;
-  while (counter < MAX_PROC_NUM) do
+  while (counter < SWAPPER_DAEMON) do
     if (counter != currentPID && [PROCESS_TABLE + counter*16 + 4] != TERMINATED) then
       backup;
       R1 = EXIT_PROCESS;

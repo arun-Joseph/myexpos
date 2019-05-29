@@ -16,7 +16,7 @@ begin
       write("Invalid details");
     endif;
     if (x == -2) then
-      write("Permisson denied");
+      write("Perm. denied");
     endif;
   endwhile;
   return 0;

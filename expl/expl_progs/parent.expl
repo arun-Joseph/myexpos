@@ -11,6 +11,7 @@ begin
   pid = exposcall("Fork");
   pid = exposcall("Fork");
   pid = exposcall("Fork");
+  pid = exposcall("Fork");
 
   if (pid == -1) then
     write("Fork Error");

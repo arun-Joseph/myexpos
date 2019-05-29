@@ -2,12 +2,52 @@
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 - 1;
 backup;
 
-alias currentPID R0;
+alias currentPID R15;
 currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+if ([SYSTEM_STATUS_TABLE + 5] != 0) then
+  if (currentPID == SWAPPER_DAEMON && [SYSTEM_STATUS_TABLE + 5] == SWAP_OUT) then
+    backup;
+    R1 = SWAP_OUT;
+    R2 = currentPID;
+    call PAGER_MODULE;
+    restore;
+  else
+    if (currentPID == SWAPPER_DAEMON && [SYSTEM_STATUS_TABLE + 5] == SWAP_IN) then
+      backup;
+      R1 = SWAP_IN;
+      R2 = currentPID;
+      call PAGER_MODULE;
+      restore;
+    endif;
+  endif;
+else
+  if ([SYSTEM_STATUS_TABLE + 5] == 0) then
+    if ([SYSTEM_STATUS_TABLE + 2] < MEM_LOW) then
+      [SYSTEM_STATUS_TABLE + 5] = SWAP_OUT;
+    else
+      alias counter R5;
+      counter = 3;
+      while (counter < SWAPPER_DAEMON) do
+        if ([PROCESS_TABLE + counter*16 + 4] == READY
+          && [PROCESS_TABLE + counter*16 + 6] == 1
+          && [PROCESS_TABLE + counter*16] > MAX_TICK) then
+          break;
+        endif;
+        counter = counter + 1;
+      endwhile;
+
+      if ([SYSTEM_STATUS_TABLE + 4] != 0
+				&& (counter != SWAPPER_DAEMON || [SYSTEM_STATUS_TABLE + 2] > MEM_HIGH)) then
+        [SYSTEM_STATUS_TABLE + 5] = SWAP_IN;
+      endif;
+    endif;
+  endif;
+endif;
 
 [PROCESS_TABLE + currentPID*16 + 4] = READY;
 
-alias counter R1;
+alias counter R5;
 counter = 0;
 while (counter < MAX_PROC_NUM) do
 	[PROCESS_TABLE + counter*16] = [PROCESS_TABLE + counter*16] + 1;

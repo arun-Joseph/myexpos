@@ -1,0 +1,178 @@
+alias functionNum R1;
+alias currentPID R2;
+
+alias swapPID R5;
+alias counter R6;
+alias page R7;
+alias block R8;
+
+if (functionNum == SWAP_OUT) then
+  alias p1 R9;
+  alias p2 R10;
+  alias state R11;
+  alias mode R12;
+
+  p1 = 0;
+  p2 = -1;
+  swapPID = 3;
+  while (swapPID < SWAPPER_DAEMON) do
+    state = [PROCESS_TABLE + swapPID*16 + 4];
+    mode = [PROCESS_TABLE + swapPID*16 + 9];
+
+    if ([PROCESS_TABLE + swapPID*16 + 6] == 1 || state == TERMINATED || state == ALLOCATED
+        || swapPID == [SYSTEM_STATUS_TABLE + 6] || mode == INT_EXEC || mode == INT_EXIT) then
+      swapPID = swapPID + 1;
+      continue;
+    endif;
+
+    if (state == WAIT_PROCESS) then
+      break;
+    else
+      if (p1 == 0 && state == WAIT_SEMAPHORE) then
+        p1 = swapPID;
+      else
+        if (state != RUNNING) then
+          if (p2 == -1) then
+            p2 = swapPID;
+          endif;
+          if ([PROCESS_TABLE + swapPID*16] > [PROCESS_TABLE + p2*16]) then
+            p2 = swapPID;
+          endif;
+        endif;
+      endif;
+    endif;
+
+    swapPID = swapPID + 1;
+  endwhile;
+
+  if (swapPID == SWAPPER_DAEMON) then
+    if (p1 != 0) then
+      swapPID = p1;
+    else
+      if (p2 != -1) then
+        swapPID = p2;
+      else
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        return;
+      endif;
+    endif;
+  endif;
+
+  [PROCESS_TABLE + swapPID*16] = 0;
+
+  counter = 2;
+  while (counter < 10) do
+    page = PAGE_TABLE_BASE + swapPID*20 + 2*counter;
+
+    if (counter >= 2 && counter < 4 && ([page] == -1 || [MEMORY_FREE_LIST + [page]] > 1)) then
+      counter = counter + 1;
+      continue;
+    endif;
+
+    if (counter < 4 || counter >= 8) then
+      multipush(R1, R2, R5, R6, R7);
+      R1 = GET_SWAP_BLOCK;
+      call MEMORY_MANAGER;
+      multipop(R1, R2, R5, R6, R7);
+      block = R0;
+
+      [DISK_MAP_TABLE + swapPID*10 + counter%10] = block;
+
+      backup;
+      R1 = DISK_STORE;
+      R2 = currentPID;
+      R3 = [page];
+      R4 = block;
+      call DEVICE_MANAGER;
+      restore;
+    endif;
+
+    if ([page] != -1) then
+      backup;
+      R1 = RELEASE_PAGE;
+      R2 = [page];
+      call MEMORY_MANAGER;
+      restore;
+
+      [page] = -1;
+      [page + 1] = "0000";
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  [PROCESS_TABLE + swapPID*16 + 6] = 1;
+  [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
+  [SYSTEM_STATUS_TABLE + 5] = 0;
+endif;
+
+if (functionNum == SWAP_IN) then
+  alias p1 R9;
+
+  p1 = -1;
+  swapPID = 3;
+  while (swapPID < SWAPPER_DAEMON) do
+    if ([PROCESS_TABLE + swapPID*16 + 4] == READY && [PROCESS_TABLE + swapPID*16 + 6] == 1) then
+      if (p1 == -1) then
+        p1 = swapPID;
+      endif;
+      if ([PROCESS_TABLE + swapPID*16] > [PROCESS_TABLE + p1*16]) then
+        p1 = swapPID;
+      endif;
+    endif;
+    swapPID = swapPID + 1;
+  endwhile;
+
+  swapPID = p1;
+  if (swapPID == -1) then
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+    return;
+  endif;
+
+  [PROCESS_TABLE + swapPID*16] = 0;
+
+  counter = 2;
+  while (counter < 10) do
+    if (counter >= 4 && counter < 8) then
+      counter = counter + 1;
+      continue;
+    endif;
+
+    if (counter >= 2 && counter < 4 && [DISK_MAP_TABLE + swapPID*10 + counter] == -1) then
+      counter = counter + 1;
+      continue;
+    endif;
+
+    multipush(R1, R2, R5, R6);
+    R1 = GET_FREE_PAGE;
+    call MEMORY_MANAGER;
+    multipop(R1, R2, R5, R6);
+    page = R0;
+
+    backup;
+    R1 = DISK_LOAD;
+    R2 = currentPID;
+    R3 = page;
+    R4 = [DISK_MAP_TABLE + swapPID*10 + counter];
+    call DEVICE_MANAGER;
+    restore;
+
+    backup;
+    R3 = currentPID;
+    R1 = RELEASE_BLOCK;
+    R2 = [DISK_MAP_TABLE + swapPID*10 + counter];
+    call MEMORY_MANAGER;
+    restore;
+
+    [DISK_MAP_TABLE + swapPID*10 + counter] = -1;
+
+    [PAGE_TABLE_BASE + swapPID*20 + 2*counter] = page;
+    [PAGE_TABLE_BASE + swapPID*20 + 2*counter + 1] = "0110";
+    counter = counter + 1;
+  endwhile;
+
+  [PROCESS_TABLE + swapPID*16 + 6] = 0;
+  [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
+  [SYSTEM_STATUS_TABLE + 5] = 0;
+endif;
+
+return;

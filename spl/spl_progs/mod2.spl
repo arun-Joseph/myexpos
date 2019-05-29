@@ -95,4 +95,22 @@ if (functionNum == GET_CODE_PAGE) then
   endif;
 endif;
 
+if (functionNum == GET_SWAP_BLOCK) then
+  alias counter R0;
+  counter = DISK_SWAP_AREA;
+  while (counter < DISK_SIZE) do
+    if ([DISK_FREE_LIST + counter] == 0) then
+      break;
+    endif;
+    counter = counter + 1;
+  endwhile;
+
+  if (counter == DISK_SIZE) then
+    R0 = -1;
+    return;
+  endif;
+
+  [DISK_FREE_LIST + counter] = 1;
+endif;
+
 return;

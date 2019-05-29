@@ -115,7 +115,7 @@ MOV R0,"Write"
 PUSH R0
 MOV R0,-2
 PUSH R0
-MOV R1,"Permisson deniedp+юд╫"
+MOV R1,"Perm. denied"
 PUSH R1
 ADD SP,2
 CALL 0
